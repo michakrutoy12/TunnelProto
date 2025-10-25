@@ -17,8 +17,7 @@ The **Server** should respond with `{start, status, reserved_port[0], reserved_p
 	2. `0x01` - Success
 - **reserved_port** - a two-byte number representing the reserved port in big-endian byte order
 
-The **Client** should respond with acknowledgment: `{start, 0x01, reserved_port[0], reserved_port[1], end}`
-- **reserved_port** - a two-byte number representing the reserved port in big-endian byte order
+The **Client** should respond with acknowledgment: `{start, 0x01, end}`
 
 ### Second Phase - Connection Notification
 ---
