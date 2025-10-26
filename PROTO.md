@@ -35,6 +35,7 @@ The **Client** responds with connection acknowledgment: `{start, 0x03, connectio
 ### Third Phase - Data Transfer
 ---
 The **server** sends packets with a maximum payload size of 1393 bytes, resulting in a total packet size of 1400 bytes (including 7 bytes of overhead). The **client** sends data in the same format.
+
 **Data packet format:** `{start, 0x04, connection_id[0], connection_id[1], data_length[0], data_length[1], data, end}`
 - `0x04` - Data transfer command
 - `data_length` - Two-byte number representing the length of the data payload (big-endian).
