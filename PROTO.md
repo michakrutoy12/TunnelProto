@@ -27,7 +27,7 @@ Connection notification format: `{start, 0x02, connection_id[0], connection_id[1
 - `0x02` - New connection notification
 - `connection_id` - Two-byte unique identifier for this connection (big-endian)
 
-The **Client** responds with connection acknowledgment: `{start, 0x03, connection_id[0], connection_id[1], end}`
+The **Client** responds with connection acknowledgment: `{start, 0x03, status, connection_id[0], connection_id[1], end}`
 - `0x03` - Connection acknowledgment
 
 **After this**, the client should connect to the local host and start tunneling data *(Third phase)*.
