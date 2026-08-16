@@ -1,10 +1,10 @@
 # Tunnel
 A lightweight, asynchronous TCP tunnel written in pure Python, allowing public internet access to a local service behind NAT or firewall. It uses a custom binary protocol to forward data between a public server and a local client.
 
-⚠ **Beta Status** – This project is under active development. It has been tested with HTTP web servers and Minecraft servers, but may still contain bugs or performance issues. Use at your own risk in production environments.
+**Beta Status** – This project is under active development. It has been tested with HTTP web servers and Minecraft servers, but may still contain bugs or performance issues. Use at your own risk in production environments.
 
 ## Features
-* **Pure Python** – no external dependencies, runs on Python 3.7+
+* **Pure Python** – no external dependencies, runs on Python 3.7+ (tested on Python 3.14)
 * **Asynchronous I/O** – uses asyncio for efficient concurrency
 * **Custom binary protocol** – minimal overhead (7‑byte header) with keep‑alive and error handling
 * **Port reservation** – dynamic port allocation on the server for each client
@@ -19,7 +19,7 @@ A lightweight, asynchronous TCP tunnel written in pure Python, allowing public i
 Clone the repository and run the script directly:
 
 ```bash
-git clone https://github.com/yourusername/tunnel.git
+git clone https://github.com/michakrutoy12/TunnelProto
 cd tunnel
 python main.py --help
 ```
@@ -85,7 +85,7 @@ However, due to the custom protocol and minimal error recovery, you may encounte
 
 We welcome bug reports and contributions to improve robustness.
 
-> **Security Note:** The protocol does not include encryption or authentication. Do not expose sensitive services over this tunnel without additional security layers (e.g., VPN, TLS, or SSH forwarding).
+>  **Security Note:** The protocol does not include encryption or authentication. Do not expose sensitive services over this tunnel without additional security layers (e.g., VPN, TLS, or SSH forwarding).
 
 ## License
 This project is licensed under the Apache License 2.0 – see the LICENSE file for details.
