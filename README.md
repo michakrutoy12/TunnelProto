@@ -1,46 +1,91 @@
 # Tunnel
+A lightweight, asynchronous TCP tunnel written in pure Python, allowing public internet access to a local service behind NAT or firewall. It uses a custom binary protocol to forward data between a public server and a local client.
 
-**Tunnel** is a lightweight tool written in **pure Python** using `asyncio` [cite: 1, 3, 4]. It allows you to expose a local service (like a web server or a game server) to the public internet through a remote server [cite: 1, 2].
+⚠ **Beta Status** – This project is under active development. It has been tested with HTTP web servers and Minecraft servers, but may still contain bugs or performance issues. Use at your own risk in production environments.
 
 ## Features
-* **Pure Python**: Zero third-party dependencies required [cite: 1, 3, 4].
-* **Async Powered**: Built entirely on top of `asyncio` for high concurrency [cite: 1, 3, 4].
-* **Custom Protocol**: Implementation of a custom framing byte-stream protocol [cite: 2, 3, 4].
-* **Multiplexing**: Supports multiple connections over a single master tunnel [cite: 3, 4].
+* **Pure Python** – no external dependencies, runs on Python 3.7+
+* **Asynchronous I/O** – uses asyncio for efficient concurrency
+* **Custom binary protocol** – minimal overhead (7‑byte header) with keep‑alive and error handling
+* **Port reservation** – dynamic port allocation on the server for each client
+* **Multiple connections** – each client can handle multiple simultaneous tunnels
+* **Keep‑alive** – detects stale connections and cleans up resources
 
----
+## Requirements
+* Python 3.7 or higher
+* No third‑party packages required
 
-## How It Works
-The project uses a simple 3-phase custom binary protocol over TCP [cite: 2]:
-1. **Handshake Phase**: Client requests a public port reservation from the server [cite: 2, 3, 4].
-2. **Connection Phase**: Server notifies the client about incoming public traffic [cite: 2, 3, 4].
-3. **Data Transfer Phase**: Binary data chunks are packed, forwarded, and unpacked on both sides [cite: 2, 3, 4].
+## Installation
+Clone the repository and run the script directly:
 
----
+```bash
+git clone https://github.com/yourusername/tunnel.git
+cd tunnel
+python main.py --help
+```
 
 ## Usage
+The tool operates in two modes: server and client.
 
-### 1. Run the Server
-Deploy the server on a public machine (VPS) with an open port [cite: 1, 4].
-
-```bash
-python main.py --log-level info server --bind-addr 0.0.0.0:8000
-```
-* Change `8000` to your desired control port [cite: 1, 4].
-
-### 2. Run the Client
-Run the client on your local machine to bridge your local app with the remote server [cite: 1, 3].
+### Server Mode
+Start the public server:
 
 ```bash
-python main.py --log-level info client --server-addr YOUR_VPS_IP:8000 --local-addr 127.0.0.1:25565
+python main.py server --bind-addr <address:port>
 ```
-* Replace `YOUR_VPS_IP` with your actual server IP address [cite: 1, 3].
-* Replace `25565` with the port of your local service [cite: 1, 3].
 
----
+* `--bind-addr` – IP and port to listen on (e.g., 0.0.0.0:8080)
+* `--log-level` (optional) – info or debug
 
-## Stability and Testing
-* **Disclaimer**: This is a custom protocol implementation [cite: 2, 3, 4]. It may experience minor instability, edge-case disconnects, or performance bottlenecks under heavy production loads.
-* **What works**: The application was successfully tested and proved stable for:
-  * **HTTP Web Servers**: Forwarding standard web traffic and assets.
-  * **Minecraft Servers**: Tunneling game traffic with acceptable latency and connection stability.
+**Example:**
+
+```bash
+python main.py server --bind-addr 0.0.0.0:8080 --log-level debug
+```
+The server will listen for client connections and allocate random ports (2000‑65535) for each tunnel.
+
+### Client Mode
+Run the client on your local machine:
+
+```bash
+python main.py client --server-addr <server:port> --local-addr <local:port>
+```
+
+* `--server-addr` – public server address (e.g., example.com:8080)
+* `--local-addr` – local service to expose (e.g., 127.0.0.1:80 for HTTP)
+
+**Example:**
+
+```bash
+python main.py client --server-addr myserver.com:8080 --local-addr 127.0.0.1:25565
+```
+Once connected, the client will reserve a port on the server. Any incoming connection to that public port will be tunneled to your local service.
+
+## Protocol
+The communication uses a binary packet format:
+
+`{0x42, payload, 0x52}`
+
+Full details are documented in PROTO.md. Key commands include:
+* Handshake (port reservation)
+* Connection notifications
+* Data transfer (max payload 4096 bytes)
+* Keep‑alive (every 30 seconds)
+* Error and close notifications
+
+## Stability & Testing
+This tunnel has been successfully used to expose:
+* HTTP servers (Apache, Nginx, development servers)
+* Minecraft Java Edition servers (port 25565)
+
+However, due to the custom protocol and minimal error recovery, you may encounter:
+* Unexpected disconnections under high load
+* Race conditions in connection management (addressed with locks, but still evolving)
+* Potential memory leaks if connections are not closed properly
+
+We welcome bug reports and contributions to improve robustness.
+
+> **Security Note:** The protocol does not include encryption or authentication. Do not expose sensitive services over this tunnel without additional security layers (e.g., VPN, TLS, or SSH forwarding).
+
+## License
+This project is licensed under the Apache License 2.0 – see the LICENSE file for details.
