@@ -13,11 +13,10 @@ import os
 import subprocess
 
 warnings.filterwarnings(
-    "ignore", 
-    category=DeprecationWarning, 
-    message=".*asyncio.iscoroutinefunction.*"
+	"ignore", 
+	category=DeprecationWarning, 
+	message=".*asyncio.iscoroutinefunction.*"
 )
-
 
 _log_level = {
 	'info': logging.INFO,
@@ -26,11 +25,28 @@ _log_level = {
 
 async def main(app):
 	loop = asyncio.get_running_loop()
+	
+	stop_event = asyncio.Event()
+
+	def signal_handler():
+		stop_event.set()
 
 	for sig in (signal.SIGINT, signal.SIGTERM):
-	    loop.add_signal_handler(sig, lambda: asyncio.create_task(app.stop()))
+		loop.add_signal_handler(sig, signal_handler)
 
-	await app.run()
+	app_task = asyncio.create_task(app.run())
+	await stop_event.wait()
+
+	try:
+		await asyncio.wait_for(app.stop(), timeout=5.0)
+	except asyncio.TimeoutError:
+		logging.warning("Force Termination: app.stop() timed out after 5 seconds.")
+
+	app_task.cancel()
+	try:
+		await app_task
+	except asyncio.CancelledError:
+		pass
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(
@@ -114,7 +130,5 @@ if __name__ == '__main__':
 
 	try:
 		uvloop.run(main(app))
-	except KeyboardInterrupt:
-		logging.info("Keyboard interrupt.")
 	except Exception as err:
-		logging.error(f"Error: {err}. Stopping...")
+		logging.error(f"Critical error: {err}. Stopping...")
