@@ -157,7 +157,7 @@ All communication between the client and server is encapsulated within a strict 
 ### Server Subcommand Options
 * `-b, --bind-addr`: Host and port to bind the server to (e.g., `0.0.0.0:1234`).
 * `--clients-limit`: Max simultaneous clients allowed to establish tunnels.
-* `--dynamic-port-allocation-range`: The range of ports available for dynamic allocation between clients for which no port is reserved (e.g., 2000-65535)
+* `--dynamic-port-allocation-range`: The range of ports available for dynamic allocation between clients for which no port is reserved (e.g., 2000-65535).
 
 ### Client Subcommand Options
 * `-s, --server-addr`: Remote tunnel server address.
