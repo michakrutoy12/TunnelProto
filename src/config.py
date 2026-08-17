@@ -11,9 +11,15 @@ default_config = {
 	'key': 'certs/server.key',
 
 	'server': {
+		'dynamic_port_allocation_range': [2000, 65535],
 		'bind_addr': '127.0.0.1:1234',
 		'enable_auth': True,
-		'allowed_clients': {_temp_uuid: {'rate_limit': float('inf')}},
+		'allowed_clients': {
+			_temp_uuid: {
+				'rate_limit': float('inf'),
+				'reserved_port': None,
+			}
+		},
 		'clients_limit': 10,
 	},
 	'client': {
@@ -37,6 +43,7 @@ class Config:
 			self._values['server']['bind_addr'] = args.bind_addr
 			self._values['server']['enable_auth'] = False
 			self._values['server']['clients_limit'] = args.clients_limit
+			self._values['server']['dynamic_port_allocation_range'] = args.dynamic_port_allocation_range
 		if args.mode == 'client':
 			self._values['client']['server_addr'] = args.server_addr
 			self._values['client']['local_addr'] = args.local_addr
@@ -51,7 +58,8 @@ class Config:
 	@property
 	def server_values(self):
 		val = self._values['server']
-		return val['bind_addr'], self._values['cert'], self._values['key'], val['enable_auth'], val['allowed_clients'], val['clients_limit']
+		return val['bind_addr'], self._values['cert'], self._values['key'], val['enable_auth'], val['allowed_clients'], \
+				val['clients_limit'], val['dynamic_port_allocation_range']
 
 	@property
 	def log_level(self):
