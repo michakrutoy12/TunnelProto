@@ -49,6 +49,24 @@ python main.py client -s 127.0.0.1:1234 -l 127.0.0.1:8080 --client-id 550e8400-e
 ### Client Authentication
 The server can require clients to present a valid `client_id` (16-byte UUID) during the handshake phase. The server validates this ID against an internal list of allowed clients.
 
+### Port Reservation (Static Ports)
+By default, the server dynamically allocates the first available public port from its internal pool (ports `2000-65535`, configurable via a configuration file or via command line parameter `--dynamic-port-allocation-range`) to any newly connected tunnel client. 
+
+For production environments where your public-facing application needs a permanent address, you can assign a **static reserved port** to a specific client ID via the configuration file.
+
+The server determines the port allocation strategy based on the `reserved_port` value in the client's profile:
+
+- **Static Assignment (`reserved_port`: <number>):** 
+  1. The server isolates this port at startup, completely removing it from the dynamic pool so no other client can accidentally hijack it.
+  2. Upon connection, the server bypasses dynamic allocation and binds exclusively to this pre-assigned port.
+  3. Upon disconnection, the port remains locked and dedicated to that specific `client_id`, rather than being recycled back into the public pool.
+
+- **Dynamic Assignment (`reserved_port`: null):** 
+  The server falls back to standard behavior. It will dynamically lease the first available port from the pool to the client for the duration of the session, and recycle it back into the allocation pool once the client disconnects.
+
+> [!NOTE]
+> Static port reservation is **strictly linked to client authentication**. If you start the server via CLI arguments (which disables authentication), static port assignment is deactivated, and all ports will be allocated dynamically.
+
 ### > [!IMPORTANT]
 > **Authentication vs CLI Arguments:** 
 > When the server is started using command-line arguments (`-b` / `--bind-addr` or `--clients-limit`), **authentication is automatically disabled**, and any client can connect.
@@ -63,17 +81,25 @@ The server can require clients to present a valid `client_id` (16-byte UUID) dur
 
 For production environments, running via a configuration file is highly recommended. If the file does not exist, a default template will be automatically generated inside `config/config.json`.
 
-### Production Config Example
+### Config Example
 ```json
 {
   "log_level": "info",
   "cert": "certs/server.pem",
   "key": "certs/server.key",
   "server": {
+    "dynamic_port_allocation_range": [2000, 65535],
     "bind_addr": "0.0.0.0:1234",
     "enable_auth": true,
     "allowed_clients": {
-      "550e8400-e29b-41d4-a716-446655440000": { "rate_limit": 1048576 }
+      "550e8400-e29b-41d4-a716-446655440000": {
+        "rate_limit": 1048576,
+        "reserved_port": 7070
+      },
+      "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d": {
+        "rate_limit": 524288,
+        "reserved_port": null
+      }
     },
     "clients_limit": 10
   },
@@ -131,6 +157,7 @@ All communication between the client and server is encapsulated within a strict 
 ### Server Subcommand Options
 * `-b, --bind-addr`: Host and port to bind the server to (e.g., `0.0.0.0:1234`).
 * `--clients-limit`: Max simultaneous clients allowed to establish tunnels.
+* `--dynamic-port-allocation-range`: The range of ports available for dynamic allocation between clients for which no port is reserved (e.g., 2000-65535)
 
 ### Client Subcommand Options
 * `-s, --server-addr`: Remote tunnel server address.
