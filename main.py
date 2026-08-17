@@ -2,9 +2,9 @@ import argparse
 import logging
 import warnings
 import signal
-import uvloop
 
 import asyncio
+import uvloop
 from src.client import Client
 from src.server import Server
 from src.config import get_config, Config
@@ -20,7 +20,9 @@ warnings.filterwarnings(
 
 _log_level = {
 	'info': logging.INFO,
-	'debug': logging.DEBUG
+	'debug': logging.DEBUG,
+	'warning': logging.WARNING,
+	'error': logging.ERROR
 }
 
 async def main(app):
@@ -55,7 +57,7 @@ if __name__ == '__main__':
 	)
 	parser.add_argument('--log-level',
 		type=str, required=False,
-		default='info', help='info/debug'
+		default='info', help='info/debug/warning/error'
 	)
 
 	parser.add_argument('--cert',
