@@ -13,11 +13,12 @@ default_config = {
 	'server': {
 		'dynamic_port_allocation_range': [2000, 65535],
 		'bind_addr': '127.0.0.1:1234',
-		'enable_auth': True,
+		'enable_auth': False,
 		'allowed_clients': {
 			_temp_uuid: {
 				'rate_limit': float('inf'),
 				'reserved_port': None,
+				'max_connections': None,
 			}
 		},
 		'clients_limit': 10,
