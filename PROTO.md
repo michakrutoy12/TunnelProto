@@ -43,9 +43,10 @@ After receiving a successful response, the client must send an acknowledgment to
 Once the handshake is complete, the server listens on the reserved public port. When a new incoming connection is accepted from the public internet, the server notifies the client.
 
 ### 2.1 Server → Client: New Connection
-- **Format:** `{0x42, 0x02, connection_id[0], connection_id[1], 0x52}`
+- **Format:** `{0x42, 0x02, connection_id[0], connection_id[1], ip[0], ip[1], ip[2], ip[3], 0x52}`
 - `0x02` – command: new connection notification
 - `connection_id` – two-byte unique identifier (big-endian) for this specific tunneled connection
+- `ip` - four-byte IP address
 
 ### 2.2 Client → Server: Connection Acknowledgment
 The client must respond to accept or reject the incoming connection.
