@@ -5,7 +5,7 @@ A high-performance, secure, and rate-limited client-server tunneling system writ
 ## Features
 
 - **Asynchronous Architecture:** Powered by Python's `asyncio` for high concurrency and low latency.
-- **High Performance:** Uses `uvloop` as an optional drop-in replacement for the standard asyncio event loop to achieve higher throughput and lower latency.
+- **High Performance:** Uses `uvloop` uvloop as an optional drop-in replacement for the standard asyncio event loop to achieve higher throughput. If uvloop is missing, the system automatically falls back to the standard `asyncio` event loop without breaking functionality.
 - **Transport Security:** All control and data traffic is fully encrypted using TLS 1.2+.
 - **Traffic Shaping:** Built-in per-client Token Bucket rate limiting to prevent server overloading.
 - **Per-Client Connection Limits:** Control the maximum number of simultaneous active tunnels per client.
@@ -27,11 +27,13 @@ The system consists of two main components:
 ## Requirements
 
 - Python 3.8+
-- `uvloop` – install via `pip install uvloop`
+- `uvloop` *(Optional, but highly recommended for maximum performance. Not supported on Windows)*
 
 ## Quick Start (Local Testing)
 
 ### 1. Install the required dependencies:
+
+To achieve maximum speed and throughput, install `uvloop`. If you skip this step, the project will run completely fine using Python's built-in `asyncio`.
 
 ```bash
     pip install uvloop
