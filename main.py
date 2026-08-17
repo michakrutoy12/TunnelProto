@@ -61,6 +61,11 @@ if __name__ == '__main__':
 		help='Maximum number of connected clients (default: 10)',
 		default=10
 	)
+	server_parser.add_argument('--dynamic-port-allocation-range', 
+		type=str, required=False,
+		help='The range of ports available for dynamic allocation between clients for which no port is reserved ([first port]-[last port], default: 2000-65535)',
+		default='2000-65535'
+	)
 	
 	# Client mode parser
 	client_parser = subparsers.add_parser('client', help='Run in client mode')
