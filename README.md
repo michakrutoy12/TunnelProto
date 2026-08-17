@@ -29,20 +29,23 @@ The system consists of two main components:
 
 Generate self-signed TLS certificates using the helper script:
 
+```bash
     python gencert.py --domain localhost --ip 127.0.0.1 --duration 365
-
+```
 ### 2. Start the Server
 
 Run the server on port `1234`. Authentication is disabled by default when using CLI arguments:
 
+```bash
     python main.py server -b 127.0.0.1:1234 --clients-limit 5
-
+```
 ### 3. Start the Client
 
 Expose your local service running at port `8080` via the remote server:
 
+```bash
     python main.py client -s 127.0.0.1:1234 -l 127.0.0.1:8080 --client-id 550e8400-e29b-41d4-a716-446655440000
-
+```
 ---
 
 ## Security & Authentication
@@ -136,6 +139,7 @@ Each key is a UUID string (with or without hyphens). The value is an object with
 
 ### Example Configuration
 
+```json
     {
       "log_level": "info",
       "cert": "certs/server.pem",
@@ -165,14 +169,15 @@ Each key is a UUID string (with or without hyphens). The value is an object with
         "client_id": "550e8400-e29b-41d4-a716-446655440000"
       }
     }
-
+```
 In the example above, `1048576` bytes/s equals 1 MB/s and `524288` bytes/s equals 512 KB/s. The client with `reserved_port: null` will receive a dynamic port.
 
 To run using the configuration file, use the `--config` flag:
 
+```bash
     python main.py --config config/config.json server
     python main.py --config config/config.json client
-
+```
 ---
 
 ## Protocol Specification (`PROTO.md` Summary)
