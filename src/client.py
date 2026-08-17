@@ -1,5 +1,6 @@
 import asyncio
 import ssl
+import socket
 
 import logging
 import time
@@ -9,6 +10,7 @@ _END_BYTE = b'\x52'
 _PAYLOAD_LENGTH = 4096
 _KEEPALIVE_INTERVAL = 30
 _HANDSHAKE_TIMEOUT = 10
+
 
 class Client:
 	def __init__(self, server_addr, local_addr, cert_path, check_hostname, client_id):
@@ -108,6 +110,8 @@ class Client:
 				uid = data[1:3]
 				logging.debug(f'New connection notification for {uid.hex()}')
 
+				conn_ip = socket.inet_ntoa(data[3:])
+
 				async with self.conn_lock:
 					duplicate = uid in self.connections
 
@@ -135,6 +139,7 @@ class Client:
 				if status[0] == 0x01:
 					logging.debug(f'Client {uid.hex()} accepted')
 					await self.register_new_client(uid, reader, writer)
+					logging.info(f'New local connection from {conn_ip} mapped. uid: {uid.hex()}')
 				else:
 					logging.debug(f'Client {uid.hex()} rejected')
 
@@ -189,8 +194,6 @@ class Client:
 				break
 
 	async def register_new_client(self, uid, reader, writer):
-		logging.info(f'New local connection mapped. uid: {uid.hex()}')
-
 		async with self.conn_lock:
 			duplicate = uid in self.connections
 			if not duplicate:
@@ -323,7 +326,7 @@ class Client:
 
 			extra_lengths = {
 				0x01: 0,
-				0x02: 2,
+				0x02: 6,
 				0x03: 3,
 				0x05: 2,
 				0x06: 0,
