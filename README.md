@@ -137,7 +137,7 @@ Each key is a UUID string (with or without hyphens). The value is an object with
 | --- | --- | --- | --- |
 | `rate_limit` | number | Infinity | Maximum data rate in bytes per second, enforced by Token Bucket. |
 | `reserved_port` | integer or null | `null` | Static public port reserved exclusively for this client. `null` means dynamic allocation. |
-| `max_connections` | integer or null | Infinity | Maximum number of simultaneous active tunnels this client may open. |
+| `max_connections` | integer | Infinity | Maximum number of simultaneous active tunnels this client may open. |
 
 > **Note:** These settings are only effective when `enable_auth` is `true`. If authentication is off, the server ignores these values and behaves as if every client had unlimited rate, dynamic port allocation, and unlimited connections.
 
