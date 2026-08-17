@@ -5,6 +5,7 @@ A high-performance, secure, and rate-limited client-server tunneling system writ
 ## Features
 
 - **Asynchronous Architecture:** Powered by Python's `asyncio` for high concurrency and low latency.
+- **High Performance:** Uses `uvloop` as an optional drop-in replacement for the standard asyncio event loop to achieve higher throughput and lower latency.
 - **Transport Security:** All control and data traffic is fully encrypted using TLS 1.2+.
 - **Traffic Shaping:** Built-in per-client Token Bucket rate limiting to prevent server overloading.
 - **Per-Client Connection Limits:** Control the maximum number of simultaneous active tunnels per client.
@@ -23,23 +24,33 @@ The system consists of two main components:
 
 ---
 
+## Requirements
+
+- Python 3.8+
+- `uvloop` – install via `pip install uvloop`
+
 ## Quick Start (Local Testing)
 
-### 1. Generate SSL Certificates
+### 1. Install the required dependencies:
+
+```bash
+    pip install uvloop
+```
+### 2. Generate SSL Certificates
 
 Generate self-signed TLS certificates using the helper script:
 
 ```bash
     python gencert.py --domain localhost --ip 127.0.0.1 --duration 365
 ```
-### 2. Start the Server
+### 3. Start the Server
 
 Run the server on port `1234`. Authentication is disabled by default when using CLI arguments:
 
 ```bash
     python main.py server -b 127.0.0.1:1234 --clients-limit 5
 ```
-### 3. Start the Client
+### 4. Start the Client
 
 Expose your local service running at port `8080` via the remote server:
 
@@ -232,5 +243,5 @@ Data packets (`0x04`) have a safe network payload limit of 1393 bytes. The appli
 
 ## Performance & Diagnostics
 
-- **Throughput:** Up to 200 MB/s over high-speed networks, primarily bounded by CPU TLS processing overhead and network bandwidth.
+- **Throughput:** Up to 300 MB/s over high-speed networks, primarily bounded by CPU TLS processing overhead and network bandwidth.
 - **Keep-Alive Thresholds:** The client sends a heartbeat every 30 seconds. The server enforces a strict 90-second timeout; clients failing to respond within this window are gracefully disconnected, and their public ports are recycled back into the allocation pool.
