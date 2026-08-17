@@ -18,7 +18,7 @@ default_config = {
 			_temp_uuid: {
 				'rate_limit': float('inf'),
 				'reserved_port': None,
-				'max_connections': None,
+				'max_connections': float('inf'),
 			}
 		},
 		'clients_limit': 10,
