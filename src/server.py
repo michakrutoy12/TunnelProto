@@ -436,8 +436,8 @@ class Server:
 						'server': None,
 						'tasks': set(),
 						'next_conn_id': 0,
-						'bucket': TokenBucket(self.allowed_clients.get(client_id, {'rate_limit': float('inf')})['rate_limit']),
-						'max_connections': self.allowed_clients.get(client_id, {'max_connections': float('inf')})['max_connections']
+						'bucket': TokenBucket(self.allowed_clients[client_id].get('rate_limit', float('inf')) if self.enable_auth else float('inf')),
+						'max_connections': self.allowed_clients[client_id].get('max_connections', float('inf')) if self.enable_auth else float('inf')
 					}
 					return uid
 
