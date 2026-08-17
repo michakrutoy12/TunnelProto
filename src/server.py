@@ -1,6 +1,7 @@
 import asyncio
 import ssl
 import random
+import socket
 
 import logging
 import time
@@ -228,8 +229,10 @@ class Server:
 			async with self.pending_lock:
 				self.pending_confirmations[inet_uid] = None
 
-			logging.info(f'New connection {inet_uid.hex()} from client {uid.hex()}')
-			await self.write(client_writer, [b'\x02', inet_uid])
+			conn_ip = writer.get_extra_info('peername')[0]
+
+			logging.info(f'New connection {inet_uid.hex()}, {conn_ip} from client {uid.hex()}')
+			await self.write(client_writer, [b'\x02', inet_uid, socket.inet_aton(conn_ip)])
 
 			timer = time.time()
 			confirmed = None
