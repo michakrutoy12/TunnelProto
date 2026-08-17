@@ -11,7 +11,6 @@ _PAYLOAD_LENGTH = 4096
 _KEEPALIVE_TIMEOUT = 90
 _CONFIRMATION_TIMEOUT = 5
 _HANDSHAKE_TIMEOUT = 10
-_MAX_CONNECTIONS_PER_CLIENT = 100
 
 
 class TokenBucket:
@@ -65,13 +64,17 @@ class Server:
 
 		self.allowed_clients = {}
 		for client in allowed_clients:
-			self.allowed_clients[bytes.fromhex(client.replace('-', ''))] = allowed_clients[client]
-
 			if not 'reserved_port' in allowed_clients[client]:
 				allowed_clients[client]['reserved_port'] = None
+			if not 'rate_limit' in allowed_clients[client]:
+				allowed_clients[client]['rate_limit'] = float('inf')
+			if not 'max_connections' in allowed_clients[client]:
+				allowed_clients[client]['max_connections'] = float('inf')
 
 			if allowed_clients[client]['reserved_port'] in self.available_ports:
 				self.available_ports.remove(allowed_clients[client]['reserved_port'])
+
+			self.allowed_clients[bytes.fromhex(client.replace('-', ''))] = allowed_clients[client]
 
 		self.connections = {}
 		self.pending_confirmations = {}
@@ -206,7 +209,7 @@ class Server:
 				if uid not in self.connections:
 					raise Exception('Client disconnected')
 
-				if len(self.connections[uid]['connections']) >= _MAX_CONNECTIONS_PER_CLIENT:
+				if len(self.connections[uid]['connections']) >= self.connections[uid]['max_connections']:
 					raise Exception('Too many connections per client')
 
 			inet_uid = await self._allocate_connection_id(uid)
@@ -260,7 +263,7 @@ class Server:
 				if uid not in self.connections:
 					raise Exception('Client disconnected')
 
-				if len(self.connections[uid]['connections']) >= _MAX_CONNECTIONS_PER_CLIENT:
+				if len(self.connections[uid]['connections']) >= self.connections[uid]['max_connections']:
 					raise Exception('Too many connections per client')
 
 				self.connections[uid]['connections'][inet_uid] = (reader, writer)
@@ -433,7 +436,8 @@ class Server:
 						'server': None,
 						'tasks': set(),
 						'next_conn_id': 0,
-						'bucket': TokenBucket(self.allowed_clients.get(client_id, {'rate_limit': float('inf')})['rate_limit'])
+						'bucket': TokenBucket(self.allowed_clients.get(client_id, {'rate_limit': float('inf')})['rate_limit']),
+						'max_connections': self.allowed_clients.get(client_id, {'max_connections': float('inf')})['max_connections']
 					}
 					return uid
 
