@@ -1,6 +1,8 @@
 import argparse
 import logging
+import warnings
 import signal
+import uvloop
 
 import asyncio
 from src.client import Client
@@ -9,6 +11,12 @@ from src.config import get_config, Config
 
 import os
 import subprocess
+
+warnings.filterwarnings(
+    "ignore", 
+    category=DeprecationWarning, 
+    message=".*asyncio.iscoroutinefunction.*"
+)
 
 
 _log_level = {
@@ -105,7 +113,7 @@ if __name__ == '__main__':
 		app = Client(*config.client_values)
 
 	try:
-		asyncio.run(main(app))
+		uvloop.run(main(app))
 	except KeyboardInterrupt:
 		logging.info("Keyboard interrupt.")
 	except Exception as err:
