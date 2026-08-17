@@ -12,7 +12,7 @@ A high-performance, secure, and rate-limited client-server tunneling system writ
 - **Static Port Reservation:** Assign fixed public ports to specific client IDs.
 - **Graceful Shutdown:** Handles `SIGINT` and `SIGTERM` signals for clean resource cleanup.
 - **Proven Stability:** Stable over long multi-hour sessions (e.g. gaming) and capable of high throughput up to 300 MB/s locally.
-
+- **IPv4 Only:** Currently, the system exclusively supports IPv4 network addressing.
 ---
 
 ## Architecture Overview
