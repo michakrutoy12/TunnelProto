@@ -1,6 +1,5 @@
 import asyncio
 import ssl
-import hmac
 
 import logging
 import time
@@ -10,7 +9,6 @@ _END_BYTE = b'\x52'
 _PAYLOAD_LENGTH = 4096
 _KEEPALIVE_INTERVAL = 30
 _HANDSHAKE_TIMEOUT = 10
-
 
 class Client:
 	def __init__(self, server_addr, local_addr, cert_path, check_hostname, client_id):
