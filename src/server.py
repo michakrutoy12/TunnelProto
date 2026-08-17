@@ -46,15 +46,11 @@ class TokenBucket:
 
 
 class Server:
-	def __init__(self, bind_addr, cert_path, key_path, enable_auth, allowed_clients, clients_limit):
+	def __init__(self, bind_addr, cert_path, key_path, enable_auth, allowed_clients, clients_limit, port_range):
 		bind_addr = bind_addr.split(':')
 		self.bind_addr = (bind_addr[0], int(bind_addr[1]))
 
 		self.enable_auth = enable_auth
-
-		self.allowed_clients = {}
-		for client in allowed_clients:
-			self.allowed_clients[bytes.fromhex(client.replace('-', ''))] = allowed_clients[client]
 
 		self.clients_limit = clients_limit
 		self.active_clients = 0
@@ -63,9 +59,19 @@ class Server:
 		self.cert_path = cert_path
 		self.key_path = key_path
 
-		self.avaiable_ports = list(range(2000, 65536))
-		if self.bind_addr[1] in self.avaiable_ports:
-			self.avaiable_ports.remove(self.bind_addr[1])
+		self.available_ports = list(range(*port_range))
+		if self.bind_addr[1] in self.available_ports:
+			self.available_ports.remove(self.bind_addr[1])
+
+		self.allowed_clients = {}
+		for client in allowed_clients:
+			self.allowed_clients[bytes.fromhex(client.replace('-', ''))] = allowed_clients[client]
+
+			if not 'reserved_port' in allowed_clients[client]:
+				allowed_clients[client]['reserved_port'] = None
+
+			if allowed_clients[client]['reserved_port'] in self.available_ports:
+				self.available_ports.remove(allowed_clients[client]['reserved_port'])
 
 		self.connections = {}
 		self.pending_confirmations = {}
@@ -366,16 +372,19 @@ class Server:
 
 	async def register_new_client(self, reader, writer, client_id):
 		async with self.ports_lock:
-			if not self.avaiable_ports:
+			if not self.available_ports:
 				raise Exception('No ports available')
 
-			port = self.avaiable_ports.pop(0)
+			if self.enable_auth and self.allowed_clients[client_id]['reserved_port']:
+				port = self.allowed_clients[client_id]['reserved_port']
+			else:
+				port = self.available_ports.pop(0)
 
 		try:
 			uid = await self._allocate_client_uid(reader, writer, port, client_id)
 		except Exception:
 			async with self.ports_lock:
-				self.avaiable_ports.append(port)
+				self.available_ports.append(port)
 			raise
 
 		try:
@@ -389,7 +398,7 @@ class Server:
 				self.connections.pop(uid, None)
 
 			async with self.ports_lock:
-				self.avaiable_ports.append(port)
+				self.available_ports.append(port)
 
 			raise
 
@@ -401,7 +410,7 @@ class Server:
 				await server.wait_closed()
 
 				async with self.ports_lock:
-					self.avaiable_ports.append(port)
+					self.available_ports.append(port)
 
 				raise Exception('Client entry disappeared')
 
@@ -415,6 +424,7 @@ class Server:
 
 				if uid not in self.connections:
 					self.connections[uid] = {
+						'client_id': client_id,
 						'port': port,
 						'reader': reader,
 						'writer': writer,
@@ -504,8 +514,9 @@ class Server:
 				task.cancel()
 
 		async with self.ports_lock:
-			self.avaiable_ports.append(client_data['port'])
-			self.avaiable_ports.sort()
+			if not (self.enable_auth and self.allowed_clients[client_data['client_id']]['reserved_port']):
+				self.available_ports.append(client_data['port'])
+				self.available_ports.sort()
 
 		logging.debug(f'Client {client_uid.hex()} closed')
 		async with self.clients_limit_lock:
