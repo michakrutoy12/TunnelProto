@@ -4,7 +4,6 @@ import warnings
 import signal
 
 import asyncio
-import uvloop
 from src.client import Client
 from src.server import Server
 from src.config import get_config, Config
@@ -123,12 +122,19 @@ if __name__ == '__main__':
 		config = Config()
 		config.parse_args(args)
 
-	logging.basicConfig(level=_log_level.get(config.log_level, logging.INFO))
+	logging.basicConfig(level=_log_level.get(config.log_level, logging.INFO), 
+						format='%(asctime)s - %(levelname)s: %(message)s')
 
 	if args.mode == 'server':
 		app = Server(*config.server_values)
 	elif args.mode == 'client':
 		app = Client(*config.client_values)
+
+	try:
+		import uvloop
+	except ImportError:
+		logging.warning("Unable to import uvloop, asyncio will be used")
+		uvloop = asyncio
 
 	try:
 		uvloop.run(main(app))
