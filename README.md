@@ -238,7 +238,7 @@ Data packets (`0x04`) have a safe network payload limit of 1393 bytes. The appli
 
 - `-s, --server-addr`: Remote tunnel server address.
 - `-l, --local-addr`: Local target application service address.
-- `--client-id`: 16-byte hex UUID for server registration (default: `0xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`, use default value only when authentication is disabled).
+- `--client-id`: 16-byte hex UUID for server registration.
 - `--check-hostname`: Validate the TLS certificate hostname (default: `true`).
 
 ---
