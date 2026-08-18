@@ -44,7 +44,7 @@ class Config:
 			self._values['server']['bind_addr'] = args.bind_addr
 			self._values['server']['enable_auth'] = False
 			self._values['server']['clients_limit'] = args.clients_limit
-			self._values['server']['dynamic_port_allocation_range'] = args.dynamic_port_allocation_range
+			self._values['server']['dynamic_port_allocation_range'] = map(int, args.dynamic_port_allocation_range.split('-'))
 		if args.mode == 'client':
 			self._values['client']['server_addr'] = args.server_addr
 			self._values['client']['local_addr'] = args.local_addr
