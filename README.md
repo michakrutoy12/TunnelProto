@@ -57,7 +57,7 @@ Run the server on port `1234`. Authentication is disabled by default when using 
 Expose your local service running at port `8080` via the remote server:
 
 ```bash
-    python main.py client -s 127.0.0.1:1234 -l 127.0.0.1:8080 --client-id 550e8400-e29b-41d4-a716-446655440000
+    python main.py client -s 127.0.0.1:1234 -l 127.0.0.1:8080
 ```
 ---
 
@@ -238,7 +238,7 @@ Data packets (`0x04`) have a safe network payload limit of 1393 bytes. The appli
 
 - `-s, --server-addr`: Remote tunnel server address.
 - `-l, --local-addr`: Local target application service address.
-- `--client-id`: 16-byte hex UUID for server registration.
+- `--client-id`: 16-byte hex UUID for server registration (default: `0xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`, use default value only when authentication is disabled).
 - `--check-hostname`: Validate the TLS certificate hostname (default: `true`).
 
 ---
