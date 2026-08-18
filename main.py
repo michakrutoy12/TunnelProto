@@ -107,7 +107,7 @@ if __name__ == '__main__':
 
 	client_parser.add_argument('--client-id',
 		type=str, required=False,
-		help='Client ID'
+		help='Client ID', default='a'*32
 	)
 	client_parser.add_argument('--check-hostname',
 		type=bool, required=False, default=True,
