@@ -10,7 +10,7 @@ _START_BYTE = b'\x42'
 _END_BYTE = b'\x52'
 _PAYLOAD_LENGTH = 4096
 _KEEPALIVE_TIMEOUT = 90
-_CONFIRMATION_TIMEOUT = 5
+_CONFIRMATION_TIMEOUT = 30
 _HANDSHAKE_TIMEOUT = 10
 
 
@@ -99,7 +99,7 @@ class Server:
 
 		try:
 			while True:
-				data = await asyncio.wait_for(self.read_packet(reader), timeout=30.0)
+				data = await asyncio.wait_for(self.read_packet(reader), timeout=_KEEPALIVE_TIMEOUT)
 				if not data:
 					break
 
