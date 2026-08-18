@@ -91,12 +91,6 @@ class Server:
 		if not uid:
 			return
 
-		keep_alive_task = asyncio.create_task(self.keep_alive_checker(uid))
-
-		async with self.conn_lock:
-			if uid in self.connections:
-				self.connections[uid]['tasks'].add(keep_alive_task)
-
 		try:
 			while True:
 				data = await asyncio.wait_for(self.read_packet(reader), timeout=_KEEPALIVE_TIMEOUT)
@@ -109,7 +103,6 @@ class Server:
 					async with self.conn_lock:
 						if uid not in self.connections:
 							break
-						self.connections[uid]['timer'] = time.time()
 						reply_writer = self.connections[uid]['writer']
 
 					try:
@@ -434,10 +427,8 @@ class Server:
 						'port': port,
 						'reader': reader,
 						'writer': writer,
-						'timer': time.time(),
 						'connections': {},
 						'server': None,
-						'tasks': set(),
 						'next_conn_id': 0,
 						'bucket': TokenBucket(self.allowed_clients[client_id].get('rate_limit', float('inf')) if self.enable_auth else float('inf')),
 						'max_connections': self.allowed_clients[client_id].get('max_connections', float('inf')) if self.enable_auth else float('inf')
@@ -445,29 +436,6 @@ class Server:
 					return uid
 
 			raise Exception('Could not allocate unique client id')
-
-	async def keep_alive_checker(self, client_uid):
-		try:
-			while True:
-				async with self.conn_lock:
-					if client_uid not in self.connections:
-						break
-
-					timer = self.connections[client_uid]['timer']
-
-				if time.time() - timer >= _KEEPALIVE_TIMEOUT:
-					logging.debug(f'Client {client_uid.hex()} closed. Keep-alive timeout.')
-					await self.close_client(client_uid, error_code=0x01)
-					break
-
-				await asyncio.sleep(3)
-
-		except asyncio.CancelledError:
-			pass
-		except Exception as err:
-			logging.debug(f'Keep-alive checker error for uid {client_uid.hex()}: {err}')
-		finally:
-			await self.close_client(client_uid)
 
 	async def close_client(self, client_uid, error_code=None):
 		async with self.conn_lock:
@@ -515,10 +483,6 @@ class Server:
 				await client_writer.wait_closed()
 		except Exception as err:
 			logging.debug(f'Error closing client writer for {client_uid.hex()}: {err}')
-
-		for task in list(client_data.get('tasks', [])):
-			if task is not asyncio.current_task():
-				task.cancel()
 
 		async with self.ports_lock:
 			if not (self.enable_auth and self.allowed_clients[client_data['client_id']]['reserved_port']):
